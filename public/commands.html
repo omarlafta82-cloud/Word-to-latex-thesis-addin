@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Commands</title>
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+</head>
+<body>
+    <script>
+        Office.onReady((reason) => {
+            if (reason === Office.HostType.Word) {
+                // Register command handlers
+                document.getElementById("ribbon-button-convert").onclick = convertToLatex;
+            }
+        });
+
+        async function convertToLatex() {
+            try {
+                await Word.run(async (context) => {
+                    const body = context.document.body;
+                    body.font.color = '#0563C1';
+                    await context.sync();
+                });
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>
