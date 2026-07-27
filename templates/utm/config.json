@@ -1,0 +1,53 @@
+{
+  "university": "utm",
+  "name": "Universiti Teknologi Malaysia",
+  "version": "7.0",
+  "year": 2023,
+  "templates": [
+    {
+      "id": "phd",
+      "name": "Doctor of Philosophy (PhD)",
+      "description": "PhD thesis conforming to UTM 2023 guidelines",
+      "mainFile": "thesis-template.tex",
+      "classFile": "utmthesis.cls"
+    },
+    {
+      "id": "masters",
+      "name": "Master's Thesis",
+      "description": "Master's degree thesis template",
+      "mainFile": "thesis-template.tex",
+      "classFile": "utmthesis.cls"
+    },
+    {
+      "id": "bachelor",
+      "name": "Bachelor's Thesis",
+      "description": "Bachelor's degree thesis template",
+      "mainFile": "thesis-template.tex",
+      "classFile": "utmthesis.cls"
+    }
+  ],
+  "formatting": {
+    "font": "Times New Roman",
+    "fontSize": 12,
+    "lineSpacing": 1.5,
+    "margins": {
+      "top": "2.5cm",
+      "bottom": "2.5cm",
+      "left": "3cm",
+      "right": "2.5cm"
+    }
+  },
+  "supportedElements": [
+    "text",
+    "headings",
+    "bold",
+    "italic",
+    "underline",
+    "lists",
+    "tables",
+    "images",
+    "citations",
+    "footnotes",
+    "cross-references"
+  ]
+}
