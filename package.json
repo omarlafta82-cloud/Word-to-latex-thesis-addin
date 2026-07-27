@@ -1,42 +1,25 @@
 {
-  "name": "word-to-latex-thesis-addin",
+  "name": "utm-thesis-converter-addin",
   "version": "1.0.0",
-  "description": "Microsoft Word add-in for converting thesis documents to LaTeX with UTM and Malaysian university template support",
-  "main": "index.js",
+  "description": "Microsoft Word add-in to convert thesis documents to UTM-compliant LaTeX format",
+  "main": "dist/index.js",
   "scripts": {
-    "start": "concurrently npm:dev:client npm:dev:server",
-    "dev:client": "react-scripts start",
-    "dev:server": "cd backend && npm run dev",
-    "build": "npm run build:client && npm run build:server",
-    "build:client": "react-scripts build",
-    "build:server": "cd backend && npm run build",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "dev": "react-scripts start",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "deploy": "npm run build && npm run deploy:client && npm run deploy:server",
-    "lint": "eslint src",
-    "format": "prettier --write src"
+    "lint": "eslint src/**/*.{ts,tsx}"
   },
   "dependencies": {
-    "@microsoft/office-js": "^1.1.75",
-    "@microsoft/office-js-helpers": "^1.1.75",
-    "axios": "^1.6.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "typescript": "^5.0.0"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^5.16.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/node": "^18.0.0",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
-    "@typescript-eslint/eslint-plugin": "^5.50.0",
-    "@typescript-eslint/parser": "^5.50.0",
-    "concurrently": "^7.6.0",
-    "eslint": "^8.33.0",
-    "eslint-plugin-react": "^7.32.0",
-    "prettier": "^2.8.0",
+    "@types/node": "^18.0.0",
     "react-scripts": "5.0.1"
   },
   "browserslist": {
@@ -50,5 +33,6 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "homepage": "http://localhost:3000"
 }
