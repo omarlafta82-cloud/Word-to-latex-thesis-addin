@@ -7,7 +7,7 @@ const fs = require('fs');
 let mainWindow;
 
 function createWindow() {
-  mainWindow = new BrowserWindow({
+  const windowOptions = {
     width: 1200,
     height: 800,
     minWidth: 800,
@@ -18,8 +18,15 @@ function createWindow() {
       enableRemoteModule: false,
       preload: path.join(__dirname, 'preload.js'),
     },
-    icon: path.join(__dirname, '../assets/icon.png'),
-  });
+  };
+
+  // Add icon if the asset exists
+  const iconPath = path.join(__dirname, '../assets/icon.png');
+  if (fs.existsSync(iconPath)) {
+    windowOptions.icon = iconPath;
+  }
+
+  mainWindow = new BrowserWindow(windowOptions);
 
   const startUrl = isDev
     ? 'http://localhost:3000'
@@ -39,7 +46,9 @@ function createWindow() {
 app.on('ready', () => {
   createWindow();
   createMenu();
-  autoUpdater.checkForUpdatesAndNotify();
+  if (!isDev) {
+    autoUpdater.checkForUpdatesAndNotify();
+  }
 });
 
 app.on('window-all-closed', () => {
@@ -136,6 +145,16 @@ ipcMain.handle('save-file', async (event, filePath, content) => {
   try {
     fs.writeFileSync(filePath, content, 'utf-8');
     return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('convert-file', async (event, filePath, metadata, degreeType) => {
+  try {
+    const { convertDocToLatex } = require('../src/converters/docxConverter');
+    const latex = await convertDocToLatex(filePath, metadata, 'utm', degreeType || 'phd');
+    return { success: true, latex };
   } catch (error) {
     return { success: false, error: error.message };
   }

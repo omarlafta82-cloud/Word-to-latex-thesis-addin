@@ -23,47 +23,60 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.11.0",
-    "docx-parser": "^0.1.4",
     "mammoth": "^1.6.0",
     "yargs": "^17.7.0",
     "chalk": "^4.1.2",
     "inquirer": "^8.2.5",
     "electron-squirrel-startup": "^1.1.0",
-    "electron-updater": "^5.3.0"
+    "electron-updater": "^5.3.0",
+    "electron-is-dev": "^1.2.0"
   },
   "devDependencies": {
     "react-scripts": "5.0.1",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@types/node": "^18.0.0",
-    "electron": "^latest",
-    "electron-builder": "^24.4.0",
+    "electron": "^28.3.0",
+    "electron-builder": "^24.13.3",
     "concurrently": "^8.0.0",
     "wait-on": "^7.0.0"
+  },
+  "browserslist": {
+    "production": [
+      "last 1 electron version"
+    ],
+    "development": [
+      "last 1 electron version"
+    ]
   },
   "build": {
     "appId": "com.utm-thesis-converter.app",
     "productName": "UTM Thesis Converter",
     "files": [
       "build/**/*",
-      "node_modules/**/*",
       "public/electron.js",
-      "public/preload.js"
+      "public/preload.js",
+      "src/**/*"
     ],
     "win": {
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64", "ia32"]
+          "arch": ["x64"]
         },
-        "portable"
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
       ]
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
+      "createStartMenuShortcut": true,
+      "installerIcon": null,
+      "uninstallerIcon": null
     },
     "mac": {
       "target": [

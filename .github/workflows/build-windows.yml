@@ -1,0 +1,116 @@
+name: Build Windows Installer (.exe)
+
+on:
+  # Run manually from the Actions tab — no tag or command needed
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version tag (e.g. v1.0.0)'
+        required: false
+        default: 'v1.0.0'
+  # Also run automatically when a version tag is pushed
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write   # needed to create GitHub Releases
+
+jobs:
+  build-windows:
+    name: Build Windows .exe
+    runs-on: windows-latest
+
+    steps:
+      # ── 1. Checkout ──────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Node.js ───────────────────────────────────────────────────────────
+      - name: Set up Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      # ── 3. Install dependencies ───────────────────────────────────────────────
+      - name: Install dependencies
+        working-directory: ./desktop
+        run: npm install --legacy-peer-deps
+
+      # ── 4. Build React frontend ───────────────────────────────────────────────
+      - name: Build React app
+        working-directory: ./desktop
+        run: npm run react-build
+        env:
+          CI: false              # treat warnings as warnings, not errors
+          GENERATE_SOURCEMAP: false
+
+      # ── 5. Package with electron-builder ─────────────────────────────────────
+      - name: Package Windows installer
+        working-directory: ./desktop
+        # --publish=never prevents electron-builder from uploading directly;
+        # we use the GitHub Release step below instead.
+        run: npx electron-builder --win --x64 --publish=never
+
+      # ── 6. List build output (debug) ──────────────────────────────────────────
+      - name: List dist directory
+        shell: pwsh
+        run: Get-ChildItem -Path desktop/dist -Recurse | Select-Object FullName, Length
+
+      # ── 7. Upload as a build artifact (always) ───────────────────────────────
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: UTM-Thesis-Converter-Windows-Installer
+          path: desktop/dist/*.exe
+          if-no-files-found: error
+          retention-days: 30
+
+      # ── 8. Determine release tag ─────────────────────────────────────────────
+      - name: Determine release tag
+        id: get_tag
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          else
+            TAG="${{ github.event.inputs.version }}"
+            TAG="${TAG:-v1.0.0}"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      # ── 9. Publish GitHub Release ────────────────────────────────────────────
+      - name: Create / update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.get_tag.outputs.tag }}
+          name: "UTM Thesis Converter ${{ steps.get_tag.outputs.tag }} — Windows Installer"
+          draft: false
+          prerelease: false
+          make_latest: true
+          files: desktop/dist/*.exe
+          body: |
+            ## 📥 UTM Thesis Converter for Windows
+
+            **Download the `.exe` file below and run it to install the application.**
+            No Node.js, no command line — just double-click and install!
+
+            ---
+
+            ### 🖥️ System Requirements
+            - Windows 10 or Windows 11 (64-bit)
+            - No additional software required
+
+            ### 📦 How to Install
+            1. Download **`UTM-Thesis-Converter-Setup.exe`** (NSIS installer) below
+            2. Double-click the downloaded file
+            3. Follow the installation wizard (choose install directory)
+            4. Launch **UTM Thesis Converter** from the Desktop or Start Menu shortcut
+
+            ### ✨ What It Does
+            - Upload a Word thesis document (`.docx` / `.doc`)
+            - Fill in thesis metadata (title, author, supervisor, degree type …)
+            - Converts the document to **UTM-compliant LaTeX** format
+            - Save / download the generated `.tex` file ready for compilation
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
