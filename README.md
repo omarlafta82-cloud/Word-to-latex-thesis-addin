@@ -7,6 +7,23 @@ A powerful Microsoft Word add-in that converts your thesis document to LaTeX for
 ![Version](https://img.shields.io/badge/version-1.0.0-brightgreen)
 ![Platform](https://img.shields.io/badge/platform-Word%202016+-blue)
 
+## 🖥️ Download Windows Desktop App (.exe)
+
+> **No command line needed — watch the animated step-by-step video guide:**
+>
+> 👉 **[Open Visual Guide — How to Build & Download Your .exe](docs/how-to-build-exe.html)**
+>
+> The guide auto-plays through all 7 steps:
+> 1. Open your GitHub repository
+> 2. Click the **Actions** tab
+> 3. Click **"Build Windows Installer (.exe)"** workflow
+> 4. Click the green **"Run workflow"** button
+> 5. Wait ~20 minutes while GitHub builds
+> 6. Go to **Releases** tab → download `UTM-Thesis-Converter-Setup.exe`
+> 7. Double-click the installer — done!
+
+---
+
 ## 🎯 Features
 
 ✅ **Easy to Use** - Write in familiar Microsoft Word

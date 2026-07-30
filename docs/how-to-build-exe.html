@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>How to Build Your .exe — UTM Thesis Converter Video Guide</title>
+<style>
+/* ═══════════════════════════════════════════════════════════
+   BASE
+═══════════════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--surface:#161b22;--border:#30363d;--accent:#1f6feb;
+  --accent2:#238636;--green:#56d364;--red:#f85149;--text:#e6edf3;
+  --text2:#8b949e;--white:#ffffff;--nav:#21262d;
+  --yellow:#d29922;--purple:#a371f7;
+}
+html{font-size:16px}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,monospace;min-height:100vh;overflow-x:hidden}
+
+/* ═══════════════════════════════════════════════════════════
+   PAGE SHELL
+═══════════════════════════════════════════════════════════ */
+.page{max-width:960px;margin:0 auto;padding:24px 16px 64px}
+
+/* top title bar */
+.title-bar{text-align:center;padding:40px 16px 32px}
+.title-bar h1{font-size:clamp(20px,4vw,34px);font-weight:700;color:var(--white);line-height:1.25}
+.title-bar p{margin-top:10px;font-size:15px;color:var(--text2);max-width:620px;margin-left:auto;margin-right:auto;line-height:1.6}
+
+/* ═══════════════════════════════════════════════════════════
+   STEP PROGRESS STRIP
+═══════════════════════════════════════════════════════════ */
+.progress-strip{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:32px;flex-wrap:wrap;row-gap:8px}
+.prog-step{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;min-width:90px}
+.prog-circle{width:38px;height:38px;border-radius:50%;border:2px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;transition:all .35s;color:var(--text2)}
+.prog-label{font-size:11px;color:var(--text2);text-align:center;max-width:80px;line-height:1.3;transition:color .35s}
+.prog-line{width:44px;height:2px;background:var(--border);margin-bottom:20px;flex-shrink:0;transition:background .35s}
+.prog-step.active .prog-circle{background:var(--accent);border-color:var(--accent);color:#fff}
+.prog-step.active .prog-label{color:var(--text)}
+.prog-step.done .prog-circle{background:var(--accent2);border-color:var(--accent2);color:#fff}
+.prog-step.done .prog-label{color:var(--green)}
+.prog-line.done{background:var(--green)}
+
+/* ═══════════════════════════════════════════════════════════
+   SLIDE VIEWER
+═══════════════════════════════════════════════════════════ */
+.slide-viewport{position:relative;overflow:hidden}
+
+/* individual slide */
+.slide{display:none;animation:slideIn .4s ease}
+.slide.active{display:block}
+@keyframes slideIn{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:translateX(0)}}
+
+/* slide inner layout */
+.slide-inner{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+@media(max-width:680px){.slide-inner{grid-template-columns:1fr}}
+
+/* ── left: narrative ── */
+.slide-text{}
+.step-badge{display:inline-block;background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:10px;letter-spacing:.5px}
+.slide-text h2{font-size:clamp(16px,2.5vw,22px);font-weight:700;color:var(--white);margin-bottom:10px;line-height:1.35}
+.slide-text p{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:8px}
+.slide-text ul{list-style:none;margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.slide-text li{font-size:13.5px;color:var(--text2);display:flex;align-items:flex-start;gap:8px;line-height:1.5}
+.slide-text li .icon{flex-shrink:0;margin-top:1px}
+.tip-box{margin-top:16px;background:#161b22;border:1px solid #d29922;border-radius:8px;padding:12px 14px;font-size:13px;color:var(--yellow);line-height:1.6}
+.tip-box strong{display:block;margin-bottom:4px}
+
+/* ── right: mock screen ── */
+.mock-screen{background:#161b22;border:1px solid var(--border);border-radius:12px;overflow:hidden;font-size:12.5px;position:relative}
+
+/* github mock nav */
+.gh-nav{background:#161b22;border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:12px}
+.gh-nav .gh-logo{font-size:22px;opacity:.9}
+.gh-nav .gh-breadcrumb{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:4px}
+.gh-nav .gh-breadcrumb span{color:var(--accent)}
+.gh-nav .gh-breadcrumb .sep{opacity:.4}
+
+/* repo tabs */
+.gh-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);padding:0 16px;background:#161b22;overflow-x:auto}
+.gh-tab{padding:10px 14px;font-size:12px;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .2s}
+.gh-tab.active-tab{color:var(--white);border-bottom-color:var(--accent);font-weight:600}
+.gh-tab:hover:not(.active-tab){color:var(--text)}
+
+/* body */
+.gh-body{padding:16px;min-height:160px}
+
+/* workflow list item */
+.wf-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:background .2s;background:var(--surface)}
+.wf-item:hover{background:#21262d}
+.wf-dot{width:10px;height:10px;border-radius:50%;background:var(--accent2);flex-shrink:0}
+.wf-name{font-weight:600;font-size:13px;color:var(--white);flex:1}
+.wf-badge{background:var(--accent);color:#fff;font-size:11px;padding:2px 7px;border-radius:20px}
+
+/* run workflow panel */
+.run-panel{border:1px solid var(--accent);border-radius:8px;padding:14px;background:#1c2128;margin-top:12px}
+.run-panel-title{font-weight:600;font-size:13px;color:var(--white);margin-bottom:10px}
+.run-branch-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.run-branch-label{font-size:12px;color:var(--text2)}
+.run-branch-select{background:#21262d;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;color:var(--text);cursor:pointer}
+.run-btn{background:var(--accent2);color:#fff;border:none;padding:7px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;width:100%;font-family:inherit;transition:opacity .2s}
+.run-btn:hover{opacity:.85}
+
+/* build progress */
+.build-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.build-row:last-child{border-bottom:none}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--accent);border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.check-icon{width:14px;height:14px;background:var(--accent2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;flex-shrink:0}
+.build-label{font-size:12.5px;color:var(--text2);flex:1}
+.build-label.done-label{color:var(--green)}
+.build-time{font-size:11px;color:var(--text2)}
+
+/* releases page */
+.release-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.release-header h3{font-size:14px;font-weight:600;color:var(--white)}
+.latest-badge{background:var(--accent2);color:#fff;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:700}
+.release-card{border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.release-title{padding:12px 14px;font-weight:700;font-size:13px;color:var(--white);background:var(--nav);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.release-assets{padding:12px 14px}
+.asset-row{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;transition:background .15s}
+.asset-row:hover{background:var(--nav)}
+.asset-icon{font-size:16px}
+.asset-name{font-size:13px;color:var(--accent);flex:1;text-decoration:underline}
+.asset-size{font-size:11px;color:var(--text2)}
+.dl-btn{background:var(--accent2);color:#fff;font-size:11px;padding:3px 10px;border-radius:6px;border:none;cursor:pointer;font-family:inherit;font-weight:600}
+
+/* install screen */
+.install-window{background:#f0f0f0;border-radius:8px;overflow:hidden;border:1px solid #bbb}
+.install-titlebar{background:linear-gradient(to bottom,#fff,#e8e8e8);padding:6px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #bbb}
+.install-titlebar-title{font-size:12px;color:#333;font-weight:600}
+.win-btns{display:flex;gap:4px}
+.win-btn{width:12px;height:12px;border-radius:50%}
+.win-btn.r{background:#ff5f57}.win-btn.y{background:#febc2e}.win-btn.g{background:#28c840}
+.install-body{padding:20px;background:#fff;min-height:120px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.install-icon-big{font-size:40px}
+.install-title{font-size:14px;font-weight:700;color:#222}
+.install-sub{font-size:12px;color:#555;line-height:1.5}
+.install-progress-bar-outer{width:100%;background:#e0e0e0;border-radius:4px;height:10px;overflow:hidden}
+.install-progress-bar-inner{height:100%;width:0%;background:#0078d4;border-radius:4px;animation:fillBar 2.5s ease forwards}
+@keyframes fillBar{to{width:100%}}
+.install-progress-pct{font-size:11px;color:#555;animation:countUp 2.5s steps(100,end) forwards}
+.install-btn-row{display:flex;gap:8px;justify-content:flex-end;width:100%;padding:10px 12px;background:#f5f5f5;border-top:1px solid #ddd}
+.install-btn{padding:5px 18px;font-size:12px;border-radius:3px;cursor:pointer;font-family:inherit;border:1px solid #bbb;background:#fff;color:#222}
+.install-btn.primary{background:#0078d4;color:#fff;border-color:#0078d4}
+
+/* cursor animation */
+.cursor{position:absolute;width:18px;height:18px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'%3E%3Cpath fill='white' stroke='black' stroke-width='1' d='M2 2 L2 14 L5.5 10.5 L8 16 L10 15 L7.5 9.5 L12 9.5 Z'/%3E%3C/svg%3E") no-repeat center/contain;pointer-events:none;z-index:20;transition:all .7s cubic-bezier(.25,.46,.45,.94);opacity:0}
+.cursor.visible{opacity:1}
+
+/* highlight pulse */
+.hl{outline:2px solid transparent;outline-offset:3px;border-radius:4px;transition:outline-color .3s}
+.hl.pulse{outline-color:var(--accent);animation:hlPulse 1s ease infinite}
+@keyframes hlPulse{0%,100%{outline-color:rgba(31,111,235,.4)}50%{outline-color:var(--accent)}}
+
+/* ═══════════════════════════════════════════════════════════
+   VIDEO CONTROLS (play/pause/progress/skip)
+═══════════════════════════════════════════════════════════ */
+.controls{margin-top:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;display:flex;flex-direction:column;gap:12px}
+.ctrl-row{display:flex;align-items:center;gap:12px}
+.ctrl-btn{background:none;border:none;color:var(--text);cursor:pointer;font-size:18px;line-height:1;padding:4px;transition:color .15s}
+.ctrl-btn:hover{color:var(--white)}
+.ctrl-progress{flex:1;height:5px;background:var(--border);border-radius:3px;cursor:pointer;position:relative;overflow:hidden}
+.ctrl-fill{height:100%;background:var(--accent);border-radius:3px;width:0%;transition:width .4s linear}
+.ctrl-time{font-size:12px;color:var(--text2);min-width:60px;text-align:right}
+.ctrl-skip-row{display:flex;gap:8px;flex-wrap:wrap}
+.skip-btn{background:var(--nav);border:1px solid var(--border);color:var(--text2);font-size:11px;padding:5px 10px;border-radius:6px;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+.skip-btn:hover{color:var(--white);border-color:var(--accent)}
+.skip-btn.current{border-color:var(--accent);color:var(--white);background:rgba(31,111,235,.15)}
+
+/* bottom nav */
+.bottom-nav{display:flex;align-items:center;justify-content:space-between;margin-top:16px;flex-wrap:wrap;gap:10px}
+.nav-btn{background:var(--accent);color:#fff;border:none;padding:10px 22px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .2s;display:flex;align-items:center;gap:6px}
+.nav-btn:hover{opacity:.85}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed}
+.nav-btn.outline{background:none;border:1px solid var(--border);color:var(--text)}
+.nav-btn.outline:hover{border-color:var(--accent);color:var(--white)}
+
+/* final done card */
+.done-card{text-align:center;padding:40px 24px;background:var(--surface);border:1px solid var(--border);border-radius:12px}
+.done-card .big-check{font-size:64px;margin-bottom:16px;display:block}
+.done-card h2{font-size:24px;color:var(--white);margin-bottom:10px}
+.done-card p{font-size:15px;color:var(--text2);line-height:1.7;max-width:500px;margin:0 auto}
+.done-card .action-link{display:inline-block;margin-top:20px;background:var(--accent2);color:#fff;text-decoration:none;padding:11px 28px;border-radius:8px;font-weight:600;font-size:14px;transition:opacity .2s}
+.done-card .action-link:hover{opacity:.85}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Title -->
+  <div class="title-bar">
+    <h1>🎬 How to Build &amp; Download Your .exe</h1>
+    <p>This visual guide walks you through every single click — from opening GitHub to downloading your ready-to-install Windows application. Press <strong>▶ Play</strong> to watch it auto-advance, or jump to any step.</p>
+  </div>
+
+  <!-- Progress strip -->
+  <div class="progress-strip" id="progressStrip">
+    <!-- rendered by JS -->
+  </div>
+
+  <!-- Slide viewport -->
+  <div class="slide-viewport">
+
+    <!-- ════════════════════════════════ SLIDE 1 ════════════════════════════════ -->
+    <div class="slide active" id="slide-0">
+      <div class="slide-inner">
+        <div class="slide-text">
+          <span class="step-badge">STEP 1 OF 7</span>
+          <h2>Open Your GitHub Repository</h2>
+          <p>Start by going to the repository in your web browser. This is where all your code lives and where the build happens automatically.</p>
+          <ul>
+            <li><span class="icon">🌐</span>Open any browser (Chrome, Edge, Firefox…)</li>
+            <li><span class="icon">📋</span>Type the URL shown on the right and press Enter</li>
+            <li><span class="icon">👀</span>You will see the repository homepage</li>
+          </ul>
+          <div class="tip-box">
+            <strong>💡 Tip</strong>
+            You can bookmark the URL so you can come back easily next time.
+          </div>
+        </div>
+        <div class="mock-screen">
+          <div class="gh-nav">
+            <span class="gh-logo">⬛</span>
+            <div class="gh-breadcrumb">
+              <span>omarlafta82-cloud</span>
+              <span class="sep"> / </span>
+              <span>Word-to-latex-thesis-addin</span>
+            </div>
+          </div>
+          <div class="gh-tabs">
+            <div class="gh-tab active-tab">📁 Code</div>
+            <div class="gh-tab">⚠️ Issues</div>
+            <div class="gh-tab">🔀 Pull requests</div>
+            <div class="gh-tab" id="s0-actions-tab" style="position:relative">⚡ Actions</div>
+            <div class="gh-tab">📦 Releases</div>
+          </div>
+          <div class="gh-body">
+            <div style="font-size:13px;color:var(--text2);margin-bottom:12px">📁 Repository files</div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;gap:8px;font-size:12px;color:var(--text2);padding:5px 8px;border-radius:4px;background:var(--nav)">📁 .github</div>
+              <div style="display:flex;gap:8px;font-size:12px;color:var(--text2);padding:5px 8px;border-radius:4px;background:var(--nav)">📁 desktop</div>
+              <div style="display:flex;gap:8px;font-size:12px;color:var(--text2);padding:5px 8px;border-radius:4px;background:var(--nav)">📁 src</div>
+              <div style="display:flex;gap:8px;font-size:12px;color:var(--text2);padding:5px 8px;border-radius:4px;background:var(--nav)">📄 README.md</div>
+            </div>
+          </div>
+          <div class="cursor visible" id="cursor-0" style="bottom:80px;right:60px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════ SLIDE 2 ════════════════════════════════ -->
+    <div class="slide" id="slide-1">
+      <div class="slide-inner">
+        <div class="slide-text">
+          <span class="step-badge">STEP 2 OF 7</span>
+          <h2>Click the "Actions" Tab</h2>
+          <p>Near the top of the repository page you will see a row of tabs. Find and click the one labelled <strong style="color:var(--white)">⚡ Actions</strong>.</p>
+          <ul>
+            <li><span class="icon">👆</span>It is the 4th tab in the row</li>
+            <li><span class="icon">⚡</span>It looks like a lightning bolt icon</li>
+            <li><span class="icon">➡️</span>Clicking it opens the workflows list</li>
+          </ul>
+          <div class="tip-box">
+            <strong>💡 Where exactly?</strong>
+            The tab row is just below the repository name at the top — Code · Issues · Pull requests · <strong>Actions</strong> · …
+          </div>
+        </div>
+        <div class="mock-screen" style="position:relative">
+          <div class="gh-nav">
+            <span class="gh-logo">⬛</span>
+            <div class="gh-breadcrumb">
+              <span>omarlafta82-cloud</span><span class="sep"> / </span><span>Word-to-latex-thesis-addin</span>
+            </div>
+          </div>
+          <div class="gh-tabs">
+            <div class="gh-tab">📁 Code</div>
+            <div class="gh-tab">⚠️ Issues</div>
+            <div class="gh-tab">🔀 Pull requests</div>
+            <div class="gh-tab hl pulse" id="s1-actions-tab" style="position:relative">⚡ Actions</div>
+            <div class="gh-tab">📦 Releases</div>
+          </div>
+          <div class="gh-body" style="display:flex;align-items:center;justify-content:center;min-height:120px">
+            <div style="font-size:13px;color:var(--text2);text-align:center">← Click the <strong style="color:var(--white)">Actions</strong> tab above</div>
+          </div>
+          <div class="cursor visible" id="cursor-1" style="top:72px;left:63%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════ SLIDE 3 ════════════════════════════════ -->
+    <div class="slide" id="slide-2">
+      <div class="slide-inner">
+        <div class="slide-text">
+          <span class="step-badge">STEP 3 OF 7</span>
+          <h2>Find the Workflow &amp; Click "Run workflow"</h2>
+          <p>On the Actions page you will see the workflow called <strong style="color:var(--white)">"Build Windows Installer (.exe)"</strong> in the left sidebar.</p>
+          <ul>
+            <li><span class="icon">👆</span>Click that workflow name in the left sidebar</li>
+            <li><span class="icon">🟩</span>A green "Run workflow" button appears on the right</li>
+            <li><span class="icon">👆</span>Click that green button</li>
+          </ul>
+          <div class="tip-box">
+            <strong>💡 Don't see the button?</strong>
+            Make sure you are logged in to GitHub with the repository owner account.
+          </div>
+        </div>
+        <div class="mock-screen">
+          <div class="gh-nav">
+            <span class="gh-logo">⬛</span>
+            <div class="gh-breadcrumb"><span>omarlafta82-cloud</span><span class="sep"> / </span><span>Word-to-latex-thesis-addin</span><span class="sep"> / </span><span>Actions</span></div>
+          </div>
+          <div class="gh-body" style="padding:12px">
+            <div style="display:flex;gap:12px">
+              <div style="width:160px;flex-shrink:0">
+                <div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Workflows</div>
+                <div class="hl pulse" style="padding:7px 10px;border-radius:6px;background:rgba(31,111,235,.15);font-size:12px;color:var(--white);cursor:pointer;font-weight:600">⚡ Build Windows Installer (.exe)</div>
+              </div>
+              <div style="flex:1">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                  <span style="font-size:13px;color:var(--white);font-weight:600">Build Windows Installer (.exe)</span>
+                  <button class="run-btn hl pulse" style="width:auto;padding:6px 14px" id="runWorkflowBtn">▶ Run workflow</button>
+                </div>
+                <div style="font-size:12px;color:var(--text2);padding:24px;text-align:center;border:1px dashed var(--border);border-radius:8px">No previous runs yet</div>
+              </div>
+            </div>
+          </div>
+          <div class="cursor visible" id="cursor-2" style="top:90px;right:55px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════ SLIDE 4 ════════════════════════════════ -->
+    <div class="slide" id="slide-3">
+      <div class="slide-inner">
+        <div class="slide-text">
+          <span class="step-badge">STEP 4 OF 7</span>
+          <h2>Confirm &amp; Start the Build</h2>
+          <p>A small dropdown panel appears under the "Run workflow" button. You do <strong style="color:var(--white)">not</strong> need to change anything — just click the green <strong style="color:var(--green)">"Run workflow"</strong> confirmation button.</p>
+          <ul>
+            <li><span class="icon">🌿</span>Branch: <strong style="color:var(--white)">main</strong> (already selected)</li>
+            <li><span class="icon">🏷️</span>Version: <strong style="color:var(--white)">v1.0.0</strong> (default — leave it)</li>
+            <li><span class="icon">✅</span>Click the green button to start building</li>
+          </ul>
+          <div class="tip-box">
+            <strong>⏱️ How long?</strong>
+            The build takes about 15–25 minutes. GitHub builds on a real Windows machine so this is normal.
+          </div>
+        </div>
+        <div class="mock-screen">
+          <div class="gh-nav">
+            <span class="gh-logo">⬛</span>
+            <div class="gh-breadcrumb"><span>Actions</span><span class="sep"> / </span><span>Build Windows Installer (.exe)</span></div>
+          </div>
+          <div class="gh-body" style="padding:12px">
+            <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+              <button class="run-btn" style="width:auto;padding:6px 14px;background:var(--accent)">▶ Run workflow ▾</button>
+            </div>
+            <div class="run-panel">
+              <div class="run-panel-title">Run workflow</div>
+              <div class="run-branch-row">
+                <span class="run-branch-label">Branch:</span>
+                <select class="run-branch-select"><option>main</option></select>
+              </div>
+              <div style="margin-bottom:10px">
+                <div style="font-size:12px;color:var(--text2);margin-bottom:4px">Release version tag (e.g. v1.0.0)</div>
+                <input type="text" value="v1.0.0" style="background:#21262d;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;color:var(--text);width:100%;font-family:inherit" />
+              </div>
+              <button class="run-btn hl pulse">✅ Run workflow</button>
+            </div>
+          </div>
+          <div class="cursor visible" id="cursor-3" style="bottom:50px;left:50%;transform:translateX(-50%)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════ SLIDE 5 ════════════════════════════════ -->
+    <div class="slide" id="slide-4">
+      <div class="slide-inner">
+        <div class="slide-text">
+          <span class="step-badge">STEP 5 OF 7</span>
+          <h2>Watch the Build Progress</h2>
+          <p>After clicking Run workflow, a new entry appears in the list. Click it to see the live progress. Each step runs in order on a real Windows server.</p>
+          <ul>
+            <li><span class="icon">🔄</span>A spinning circle = step is running</li>
+            <li><span class="icon">✅</span>A green tick = step completed</li>
+            <li><span class="icon">⏱️</span>Total time: ~15–25 minutes</li>
+            <li><span class="icon">🔔</span>GitHub can email you when it finishes</li>
+          </ul>
+          <div class="tip-box">
+            <strong>📌 You don't need to stay on this page.</strong>
+            Close the browser tab — the build keeps running on GitHub's servers.
+          </div>
+        </div>
+        <div class="mock-screen">
+          <div class="gh-nav">
+            <span class="gh-logo">⬛</span>
+            <div class="gh-breadcrumb"><span>Actions</span><span class="sep"> / </span><span>Build run</span></div>
+          </div>
+          <div class="gh-body" style="padding:12px">
+            <div style="font-size:13px;color:var(--white);font-weight:600;margin-bottom:12px">⚡ Build Windows Installer (.exe) — run #1</div>
+            <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+              <div style="background:var(--nav);padding:8px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2)">Build Windows .exe</div>
+              <div style="padding:10px 12px;display:flex;flex-direction:column;gap:0">
+                <div class="build-row"><div class="check-icon">✓</div><span class="build-label done-label">Checkout repository</span><span class="build-time">3s</span></div>
+                <div class="build-row"><div class="check-icon">✓</div><span class="build-label done-label">Set up Node.js 18</span><span class="build-time">12s</span></div>
+                <div class="build-row"><div class="check-icon">✓</div><span class="build-label done-label">Install dependencies</span><span class="build-time">1m 42s</span></div>
+                <div class="build-row"><div class="spin"></div><span class="build-label">Build React app</span><span class="build-time" style="color:var(--yellow)">running…</span></div>
+                <div class="build-row" style="opacity:.4"><div style="width:14px;height:14px;background:var(--border);border-radius:50%;flex-shrink:0"></div><span class="build-label">Package Windows installer</span></div>
+                <div class="build-row" style="opacity:.4"><div style="width:14px;height:14px;background:var(--border);border-radius:50%;flex-shrink:0"></div><span class="build-label">Create GitHub Release</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════ SLIDE 6 ════════════════════════════════ -->
+    <div class="slide" id="slide-5">
+      <div class="slide-inner">
+        <div class="slide-text">
+          <span class="step-badge">STEP 6 OF 7</span>
+          <h2>Go to the "Releases" Tab &amp; Download</h2>
+          <p>When the build finishes (all ticks green ✅), go back to the main repository page and click the <strong style="color:var(--white)">📦 Releases</strong> tab — or look for the Releases section on the right side of the Code page.</p>
+          <ul>
+            <li><span class="icon">🏷️</span>Find the release labelled <strong style="color:var(--white)">v1.0.0</strong></li>
+            <li><span class="icon">💾</span>Click <strong style="color:var(--accent)">UTM-Thesis-Converter-Setup.exe</strong></li>
+            <li><span class="icon">⬇️</span>The file downloads to your computer</li>
+          </ul>
+          <div class="tip-box">
+            <strong>📁 File size</strong>
+            The installer is typically 60–90 MB. Save it anywhere on your computer.
+          </div>
+        </div>
+        <div class="mock-screen">
+          <div class="gh-nav">
+            <span class="gh-logo">⬛</span>
+            <div class="gh-breadcrumb"><span>omarlafta82-cloud</span><span class="sep"> / </span><span>Word-to-latex-thesis-addin</span><span class="sep"> / </span><span>Releases</span></div>
+          </div>
+          <div class="gh-body" style="padding:12px">
+            <div class="release-header">
+              <h3>Releases</h3>
+              <span class="latest-badge">Latest</span>
+            </div>
+            <div class="release-card">
+              <div class="release-title">🏷️ v1.0.0 &nbsp; UTM Thesis Converter — Windows Installer</div>
+              <div class="release-assets">
+                <div style="font-size:11px;color:var(--text2);margin-bottom:8px;font-weight:600;text-transform:uppercase">Assets</div>
+                <div class="asset-row hl pulse">
+                  <span class="asset-icon">💾</span>
+                  <span class="asset-name">UTM-Thesis-Converter-Setup.exe</span>
+                  <span class="asset-size">78 MB</span>
+                  <button class="dl-btn">⬇ Download</button>
+                </div>
+                <div class="asset-row">
+                  <span class="asset-icon">💾</span>
+                  <span class="asset-name">UTM-Thesis-Converter-Portable.exe</span>
+                  <span class="asset-size">76 MB</span>
+                  <button class="dl-btn">⬇ Download</button>
+                </div>
+                <div class="asset-row">
+                  <span class="asset-icon">📦</span>
+                  <span class="asset-name">Source code (zip)</span>
+                  <span class="asset-size">2.1 MB</span>
+                  <button class="dl-btn">⬇ Download</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="cursor visible" id="cursor-5" style="top:118px;right:52px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════ SLIDE 7 ════════════════════════════════ -->
+    <div class="slide" id="slide-6">
+      <div class="slide-inner">
+        <div class="slide-text">
+          <span class="step-badge">STEP 7 OF 7</span>
+          <h2>Install &amp; Launch the Application</h2>
+          <p>Double-click the downloaded <strong style="color:var(--white)">UTM-Thesis-Converter-Setup.exe</strong> file. The Windows installer wizard opens. Follow the on-screen steps — it takes about 30 seconds.</p>
+          <ul>
+            <li><span class="icon">🖱️</span>Double-click the .exe in your Downloads folder</li>
+            <li><span class="icon">📂</span>Choose install location (or keep default)</li>
+            <li><span class="icon">✅</span>Click "Next → Next → Install → Finish"</li>
+            <li><span class="icon">🚀</span>Application opens — ready to convert!</li>
+          </ul>
+          <div class="tip-box">
+            <strong>🛡️ Windows SmartScreen?</strong>
+            If Windows shows "Unknown publisher" warning, click <em>More info → Run anyway</em>. This is normal for new software.
+          </div>
+        </div>
+        <div class="mock-screen">
+          <div class="install-window">
+            <div class="install-titlebar">
+              <span class="install-titlebar-title">UTM Thesis Converter Setup</span>
+              <div class="win-btns"><span class="win-btn r"></span><span class="win-btn y"></span><span class="win-btn g"></span></div>
+            </div>
+            <div class="install-body">
+              <div class="install-icon-big">📄</div>
+              <div class="install-title">Installing UTM Thesis Converter…</div>
+              <div class="install-sub">Please wait while the application is being installed on your computer.</div>
+              <div class="install-progress-bar-outer">
+                <div class="install-progress-bar-inner" id="installBar"></div>
+              </div>
+              <div class="install-progress-pct" id="installPct">Installing…</div>
+            </div>
+            <div class="install-btn-row">
+              <button class="install-btn" disabled>Back</button>
+              <button class="install-btn primary">Next</button>
+              <button class="install-btn" disabled>Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════ DONE ════════════════════════════════ -->
+    <div class="slide" id="slide-done">
+      <div class="done-card">
+        <span class="big-check">🎉</span>
+        <h2>You're Done!</h2>
+        <p>Your UTM Thesis Converter is now installed on your Windows computer. Launch it from the Desktop or Start Menu shortcut, upload a Word thesis document, fill in your details and download the LaTeX file.</p>
+        <a href="https://github.com/omarlafta82-cloud/Word-to-latex-thesis-addin/actions" target="_blank" class="action-link">⚡ Open GitHub Actions — Start My Build</a>
+      </div>
+    </div>
+
+  </div><!-- /slide-viewport -->
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="ctrl-row">
+      <button class="ctrl-btn" id="playPauseBtn" title="Play / Pause">▶</button>
+      <button class="ctrl-btn" id="prevBtn" title="Previous step">⏮</button>
+      <button class="ctrl-btn" id="nextBtn" title="Next step">⏭</button>
+      <div class="ctrl-progress" id="ctrlProgress">
+        <div class="ctrl-fill" id="ctrlFill"></div>
+      </div>
+      <span class="ctrl-time" id="ctrlTime">Step 1 / 7</span>
+    </div>
+    <div class="ctrl-skip-row" id="skipRow"></div>
+  </div>
+
+  <!-- Bottom nav -->
+  <div class="bottom-nav">
+    <button class="nav-btn outline" id="botPrevBtn">← Previous</button>
+    <button class="nav-btn" id="botNextBtn">Next →</button>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+/* ═══════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════ */
+const STEPS = [
+  { label:"Open Repo",     icon:"🌐" },
+  { label:"Actions Tab",   icon:"⚡" },
+  { label:"Run Workflow",  icon:"▶" },
+  { label:"Start Build",   icon:"✅" },
+  { label:"Watch Build",   icon:"🔄" },
+  { label:"Download .exe", icon:"⬇️" },
+  { label:"Install",       icon:"🖥" },
+];
+
+const SLIDE_DURATIONS = [5500, 5500, 5500, 6000, 7000, 6000, 6500]; // ms per slide
+
+let current = 0;
+let playing = false;
+let timer   = null;
+let elapsed = 0;
+let tickInterval = null;
+const TOTAL = STEPS.length;
+
+/* ═══════════════════════════════════════════
+   BUILD PROGRESS + INSTALL BAR ANIMATIONS
+═══════════════════════════════════════════ */
+function buildProgressStrip() {
+  const strip = document.getElementById('progressStrip');
+  strip.innerHTML = '';
+  STEPS.forEach((s, i) => {
+    const stepEl = document.createElement('div');
+    stepEl.className = 'prog-step' + (i === current ? ' active' : i < current ? ' done' : '');
+    stepEl.innerHTML = `<div class="prog-circle">${i < current ? '✓' : i === current ? s.icon : i+1}</div><span class="prog-label">${s.label}</span>`;
+    stepEl.addEventListener('click', () => goTo(i));
+    strip.appendChild(stepEl);
+    if (i < TOTAL - 1) {
+      const line = document.createElement('div');
+      line.className = 'prog-line' + (i < current ? ' done' : '');
+      strip.appendChild(line);
+    }
+  });
+}
+
+function buildSkipRow() {
+  const row = document.getElementById('skipRow');
+  row.innerHTML = '';
+  STEPS.forEach((s, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'skip-btn' + (i === current ? ' current' : '');
+    btn.textContent = `${i+1}. ${s.label}`;
+    btn.addEventListener('click', () => goTo(i));
+    row.appendChild(btn);
+  });
+}
+
+function showSlide(idx) {
+  document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+  const target = idx >= TOTAL
+    ? document.getElementById('slide-done')
+    : document.getElementById(`slide-${idx}`);
+  if (target) target.classList.add('active');
+}
+
+function updateUI() {
+  buildProgressStrip();
+  buildSkipRow();
+  showSlide(current);
+  const total = current >= TOTAL ? TOTAL : TOTAL;
+  const shown = Math.min(current + 1, TOTAL);
+  document.getElementById('ctrlTime').textContent =
+    current >= TOTAL ? 'Done! 🎉' : `Step ${shown} / ${TOTAL}`;
+  document.getElementById('ctrlFill').style.width =
+    ((current / TOTAL) * 100).toFixed(1) + '%';
+  document.getElementById('botPrevBtn').disabled = current === 0;
+  document.getElementById('botNextBtn').textContent =
+    current >= TOTAL - 1 ? 'Finish ✓' : 'Next →';
+  document.getElementById('botNextBtn').disabled = current >= TOTAL;
+}
+
+/* ═══════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════ */
+function goTo(idx) {
+  stopPlay();
+  current = Math.max(0, Math.min(idx, TOTAL));
+  elapsed = 0;
+  updateUI();
+}
+
+function advance() {
+  if (current < TOTAL) {
+    current++;
+    elapsed = 0;
+    updateUI();
+    if (current >= TOTAL) { stopPlay(); }
+  }
+}
+
+/* ═══════════════════════════════════════════
+   PLAY / PAUSE
+═══════════════════════════════════════════ */
+const TICK_MS = 100;
+
+function startPlay() {
+  if (current >= TOTAL) { goTo(0); }
+  playing = true;
+  document.getElementById('playPauseBtn').textContent = '⏸';
+  tickInterval = setInterval(() => {
+    elapsed += TICK_MS;
+    const dur = SLIDE_DURATIONS[current] || 5000;
+    const pct = Math.min((elapsed / dur) * 100, 100);
+    document.getElementById('ctrlFill').style.width =
+      ((current / TOTAL) * 100 + (pct / 100) * (100 / TOTAL)).toFixed(2) + '%';
+    if (elapsed >= dur) { advance(); }
+  }, TICK_MS);
+}
+
+function stopPlay() {
+  playing = false;
+  clearInterval(tickInterval);
+  tickInterval = null;
+  document.getElementById('playPauseBtn').textContent = '▶';
+}
+
+document.getElementById('playPauseBtn').addEventListener('click', () => {
+  playing ? stopPlay() : startPlay();
+});
+document.getElementById('prevBtn').addEventListener('click', () => goTo(current - 1));
+document.getElementById('nextBtn').addEventListener('click', () => goTo(current + 1));
+document.getElementById('botPrevBtn').addEventListener('click', () => goTo(current - 1));
+document.getElementById('botNextBtn').addEventListener('click', () => {
+  if (current >= TOTAL - 1) { goTo(TOTAL); } else { goTo(current + 1); }
+});
+
+/* click on progress bar */
+document.getElementById('ctrlProgress').addEventListener('click', (e) => {
+  const rect = e.currentTarget.getBoundingClientRect();
+  const pct = (e.clientX - rect.left) / rect.width;
+  goTo(Math.min(TOTAL - 1, Math.floor(pct * TOTAL)));
+});
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+updateUI();
+
+// Auto-start after 1.5 s
+setTimeout(() => {
+  startPlay();
+}, 1500);
+</script>
+</body>
+</html>
