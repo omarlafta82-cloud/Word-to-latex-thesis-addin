@@ -6,11 +6,15 @@
   "homepage": "./",
   "author": "Omar Lafta",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/omarlafta82-cloud/Word-to-latex-thesis-addin.git"
+  },
   "scripts": {
     "react-start": "react-scripts start",
     "react-build": "react-scripts build",
     "build": "npm run react-build && electron-builder",
-    "build-win": "npm run react-build && electron-builder --win",
+    "build-win": "npm run react-build && electron-builder --win --publish never -c.win.signAndEditExecutable=false",
     "build-mac": "npm run react-build && electron-builder --mac",
     "build-linux": "npm run react-build && electron-builder --linux",
     "dev": "concurrently \"npm run react-start\" \"wait-on http://localhost:3000 && electron .\"",
