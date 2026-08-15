@@ -10,6 +10,7 @@ const initialMetadata = {
   graduationYear: String(new Date().getFullYear()),
   abstract: '',
 };
+const UNIVERSITY_ID = 'utm';
 
 export default function App() {
   const [filePath, setFilePath] = useState('');
@@ -34,7 +35,7 @@ export default function App() {
     }
 
     setLoading(true);
-    const result = await window.electron.convertDocx(filePath, metadata, 'utm', degreeType);
+    const result = await window.electron.convertDocx(filePath, metadata, UNIVERSITY_ID, degreeType);
     setLoading(false);
 
     if (!result.success) {
