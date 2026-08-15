@@ -49,7 +49,9 @@
       "build/**/*",
       "node_modules/**/*",
       "public/electron.js",
-      "public/preload.js"
+      "public/preload.js",
+      "src/converters/**/*",
+      "src/templates/**/*"
     ],
     "win": {
       "target": [
