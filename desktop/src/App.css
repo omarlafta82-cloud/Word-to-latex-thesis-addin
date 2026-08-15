@@ -1,0 +1,51 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f5f7fb;
+}
+
+.app {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h1 {
+  margin-bottom: 8px;
+}
+
+.panel {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+input,
+textarea,
+select,
+button {
+  font-size: 14px;
+  padding: 8px;
+}
+
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.file-path {
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 8px;
+  border-radius: 4px;
+  flex: 1;
+  min-width: 260px;
+}

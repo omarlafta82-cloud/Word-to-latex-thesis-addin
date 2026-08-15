@@ -3,6 +3,7 @@ const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const isDev = require('electron-is-dev');
 const fs = require('fs');
+const { convertDocToLatex } = require('../src/converters/docxConverter');
 
 let mainWindow;
 
@@ -147,4 +148,13 @@ ipcMain.handle('show-notification', async (event, options) => {
 
 ipcMain.handle('get-app-version', async () => {
   return app.getVersion();
+});
+
+ipcMain.handle('convert-docx', async (event, filePath, metadata, university, degreeType) => {
+  try {
+    const latex = await convertDocToLatex(filePath, metadata, university, degreeType);
+    return { success: true, latex };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
 });
